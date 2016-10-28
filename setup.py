@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 dependencies = ["mongoengine", "dateutils"]
 desc = "More human readable JSON serializer/de-serializer for MongoEngine"
-version = "0.11.3"
+version = "0.0.1"
 if sys.version_info < (2, 7):
     raise RuntimeError("Not supported on earlier then python 2.7.")
 
@@ -23,7 +23,7 @@ except Exception:
     long_desc = None
 
 setup(
-    name="mongoengine_goodjson",
+    name="mongoengine_goodjson_aiscen",
     version=version,
     description=desc,
     long_description=long_desc,
@@ -34,7 +34,7 @@ setup(
     author_email="aiscenblue@gmail.com",
     license="MIT",
     keywords="json mongoengine mongodb",
-    url="https://github.com/aiscenblue/mongoengine-goodjson",
+    url="https://github.com/aiscenblue/mongoengine_goodjson",
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",
