@@ -31,7 +31,7 @@ class QuerySet(db.QuerySet):
 
     def __get_doc(self, fld, item):
         """Get document as dict or a list of documents."""
-        from mongoengine_goodjson.fields import FollowReferenceField
+        from .fields import FollowReferenceField
 
         @singledispatch
         def doc(fld, item):
@@ -88,7 +88,7 @@ class QuerySet(db.QuerySet):
         for dct in lst:
             for exc in exclude:
                 dct.pop(exc, None)
-        return json.dumps(lst, *args, **kwargs)
+        return json.loads(json.dumps(lst, *args, **kwargs))
 
     def from_json(self, json_data):
         """Convert from JSON."""
@@ -107,3 +107,17 @@ class QuerySet(db.QuerySet):
         return [
             self._document._from_son(bson.SON(data)) for data in mongo_data
         ]
+
+    def paginate(self, page, per_page=15):
+        """Limit the number of returned documents to `n`. This may also be
+        achieved using array-slicing syntax (e.g. ``User.objects[:5]``).
+
+        :param n: the maximum number of objects to return
+        """
+        queryset = self.clone()
+        queryset._paginate = page if page != 0 else 1
+        # Return self to allow chaining
+        start_index = (page - 1) * per_page
+        end_index = page * per_page
+        return queryset[start_index:end_index]
+

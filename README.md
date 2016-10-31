@@ -1,20 +1,10 @@
 # More human readable JSON serializer/de-serializer for MongoEngine
-[![Build Status]][Status Link]
-[![Coverage Status]][Coverage Link]
-[![Code Health]][Health Link]
 [![PyPI version]][PyPI link]
 
-[Build Status]: https://travis-ci.org/hiroaki-yamamoto/mongoengine-goodjson.svg?branch=master
-[Status Link]: https://travis-ci.org/hiroaki-yamamoto/mongoengine-goodjson
-[Coverage Status]: https://coveralls.io/repos/github/hiroaki-yamamoto/mongoengine-goodjson/badge.svg?branch=master
-[Coverage Link]: https://coveralls.io/github/hiroaki-yamamoto/mongoengine-goodjson?branch=master
-[Code Health]: https://landscape.io/github/hiroaki-yamamoto/mongoengine-goodjson/master/landscape.svg?style=flat
-[Health Link]: https://landscape.io/github/hiroaki-yamamoto/mongoengine-goodjson/master
-[PyPI version]: https://badge.fury.io/py/mongoengine_goodjson.svg
-[PyPI link]: https://badge.fury.io/py/mongoengine_goodjson
+[PyPI link]: https://badge.fury.io/py/mongoengine_utils
 
 ## What This?
-This script has MongoEngine Document json serialization more-natural.
+This script has MongoEngine Document json serialization more-natural and pagination.
 
 ## Why this invented?
 
@@ -27,7 +17,7 @@ are weird and not suitable for frontend/api:
   "_id": {
     "$oid": "5700c32a1cbd5856815051ce"
   },
-  "name": "Hiroaki Yamamoto",
+  "name": "Jeffrey Marvin",
   "registered_date": {
       "$date": 1459667811724
   }
@@ -50,7 +40,7 @@ To solve the problems, the generated data should be like this:
 ```JSON
 {
   "id": "5700c32a1cbd5856815051ce",
-  "name": "Hiroaki Yamamoto",
+  "name": "Jeffrey Marvin",
   "registered_date": 1459667811724
 }
 ```
@@ -123,11 +113,11 @@ Here is the example:
 ```Python
 """Example schema."""
 
-import mongoengine_goodjson as gj
+import mongoengine_utils as mongo_utils
 import mongoengine as db
 
 
-class Address(gj.EmbeddedDocument):
+class Address(mongo_utils.EmbeddedDocument):
     """Address schema."""
 
     street = db.StringField()
@@ -135,7 +125,7 @@ class Address(gj.EmbeddedDocument):
     state = db.StringField()
 
 
-class User(gj.Document):
+class User(mongo_utils.Document):
     """User data schema."""
 
     name = db.StringField()
@@ -150,10 +140,10 @@ by default:
 `model.py`
 ```Python
 import mongoengine as db
-import mongoengine_goodjson as gj
+import mongoengine_utils as mongo_utils
 
 
-class Book(gj.Document):
+class Book(mongo_utils.Document):
   """Book information model."""
 
   name = db.StringField(required=True)
@@ -163,7 +153,7 @@ class Book(gj.Document):
   publish_date = db.DateTimeField(required=True)
 
 
-class User(gj.Document):
+class User(mongo_utils.Document):
   firstname = db.StringField(required=True)
   lastname = db.StringField(required=True)
   books_bought = db.ListField(db.ReferenceField(Book))
@@ -174,8 +164,8 @@ class User(gj.Document):
 ```JSON
 {
   "id": "570ee9d1fec55e755db82129",
-  "firstname": "James",
-  "lastname": "Smith",
+  "firstname": "Jeffrey",
+  "lastname": "Marvin",
   "books_bought": [
     "570eea0afec55e755db8212a",
     "570eea0bfec55e755db8212b",
@@ -191,22 +181,22 @@ to generate the Document with Referenced Document like Embedded Document:
 ```JSON
 {
   "id": "570ee9d1fec55e755db82129",
-  "firstname": "James",
-  "lastname": "Smith",
+  "firstname": "Jeffrey",
+  "lastname": "Marvin",
   "books_bought": [
     {
       "id": "570eea0afec55e755db8212a",
-      "name": "ドグラ・マグラ (上)",
-      "author": "夢野 久作",
-      "publisher": "角川文庫",
+      "name": "Test",
+      "author": "Test",
+      "publisher": "Test",
       "publish_date": "1976-10-01",
       "isbn": "978-4041366035"
     },
     {
       "id": "570eea0bfec55e755db8212b",
-      "name": "ドグラ・マグラ (下)",
-      "author": "夢野 久作",
-      "publisher": "角川文庫",
+      "name": "Test",
+      "author": "Test",
+      "publisher": "Test",
       "publish_date": "1976-10-01",
       "isbn": "978-4041366042"
     },
@@ -221,9 +211,9 @@ to generate the Document with Referenced Document like Embedded Document:
   ],
   "favorite_one": {
     "id": "570eea0bfec55e755db8212b",
-    "name": "ドグラ・マグラ (下)",
-    "author": "夢野 久作",
-    "publisher": "角川文庫",
+    "name": "Test",
+    "author": "Test",
+    "publisher": "Test",
     "publish_date": "1976-10-01",
     "isbn": "978-4041366042"
   }
@@ -275,21 +265,21 @@ like this:
 
 ```Python
 import mongoengine as db
-import mongoengine_goodjson as gj
+import mongoengine_utils as mongo_utils
 
 
-class User(gj.Document):
+class User(mongo_utils.Document):
   """User info."""
   name = db.StringField()
   email = db.EmailField()
 
-class DetailedProfile(gj.Document):
+class DetailedProfile(mongo_utils.Document):
   """Detail profile of the user."""
   # FollowReferenceField without auto-save
-  user = gj.FollowReferenceField(User)
+  user = mongo_utils.FollowReferenceField(User)
   yob = db.DateTimeField()
   # FollowReferenceField with auto-save
-  partner = gj.FollowReferenceField(User, autosave=True)
+  partner = mongo_utils.FollowReferenceField(User, autosave=True)
 ```
 
 ### Important Note when use FollowReferenceField
@@ -316,7 +306,7 @@ the following:
 To use the exclusion, you can just put exclude metadata like this:
 
 ```python
-import mongoengine_goodjson as gj
+import mongoengine_utils as mongo_utils
 import mongoengine as db
 
 
@@ -347,6 +337,11 @@ def get_obj_from_json(json_text):
 def get_list_from_json(json_text):
   return Exclude.objects.from_json(json_text)
 ```
+
+#pagination
+User.objects().paginate(page=1, per_page=15).to_json()
+#per_page if not declared will be default limit to 15
+
 
 ## Not implemented list
 The following types are partially implemented because there aren't any
@@ -386,24 +381,3 @@ In addition, you can use [gulp] to watch the file changes.
 
 [MongoDB]: https://www.mongodb.org/
 [gulp]: http://gulpjs.com/
-
-## License (MIT License)
-Copyright (c) 2016 Hiroaki Yamamoto
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.

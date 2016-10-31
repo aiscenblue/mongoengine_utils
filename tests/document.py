@@ -7,8 +7,8 @@ from unittest import TestCase
 
 from bson import ObjectId
 import mongoengine as db
-from mongoengine_goodjson import GoodJSONEncoder, Document, EmbeddedDocument
-from mongoengine_goodjson.document import Helper
+from mongoengine_goodjson_aiscenblue import GoodJSONEncoder, Document, EmbeddedDocument
+from mongoengine_goodjson_aiscenblue.document import Helper
 
 try:
     from unittest.mock import patch, MagicMock, call
